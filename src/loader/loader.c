@@ -154,7 +154,11 @@ nouveau_zink_predicate(int fd, const char *driver)
     * We only use Zink if if the kernel supports VMA_TILEMODE, which is needed
     * for DRM format modifiers.  This also doubles as a check for a new enough
     * kernel to run NVK in general.
+    *
+    * LINEAGE: only when Zink is built. Otherwise no driver matched these GPUs
+    * and EGL fell back to software rendering.
     */
+#ifdef HAVE_ZINK
    struct drm_nouveau_getparam r = { .param = NOUVEAU_GETPARAM_HAS_VMA_TILEMODE };
    int ret = drmCommandWriteRead(fd, DRM_NOUVEAU_GETPARAM, &r, sizeof(r));
    if (ret == 0 && r.value == 1) {
@@ -169,6 +173,7 @@ nouveau_zink_predicate(int fd, const char *driver)
          require_zink = true;
       }
    }
+#endif
    assert(!require_zink || prefer_zink);
 
    prefer_zink = debug_get_bool_option("NOUVEAU_USE_ZINK", prefer_zink);
